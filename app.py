@@ -10,15 +10,17 @@ import string
 import tensorflow as tf
 import tqdm
 
-from tensorflow.keras import Sequential, layers
 from gensim.models import Word2Vec
+from tensorflow.keras import Sequential, layers
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, LSTM, Dense, Dropout
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 
 SEED = 42
 AUTOTUNE = tf.data.AUTOTUNE
 MAX_LENGTH = 100
-
+EMBEDDING_DIM = 100
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -92,5 +94,41 @@ y = df["sentiment"].map(sentiment_map).values
 
 
 # Create Word2Vec embedding matrix
+embedding_matrix = np.zeros((vocab_size, EMBEDDING_DIM))
+
+for word, i in word_index.items():
+    if word in word2vec_model.wv:
+        embedding_matrix[i] = word2vec_model.wv[word]
+
+# build LSTM model
+model = Sequential([
+    Embedding(
+        input_dim = vocab_size,
+        output_dim = EMBEDDING_DIM,
+        weights = [embedding_matrix],
+        input_length = MAX_LENGTH,
+        trainable=False
+    ),
+    LSTM(128),
+    Dropout(0.5),
+    Dense(64, activation="relu"),
+    Dense(3, activation="softmax") # Because I have positive, negative, neutral
+])
+
+# Compile model
+model.compile(loss="sparse_categorical_crossentropy",
+              optimizer = "adam",
+              metrics=["accuracy"]
+)
+
+# Train model
+history = model.fit(
+    X,
+    y,
+    epochs=10,
+    batch_size=32,
+    validation_split=0.2
+)
 
 print(df.head())
+print(df.info())
