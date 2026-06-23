@@ -8,11 +8,15 @@ import re
 import shutil
 import string
 import tensorflow as tf
+import tqdm
 
-from tensorflow.keras import Sequential
+from tensorflow.keras import Sequential, layers
 from tensorflow.keras.layers import Dense, Embedding, GlobalAveragePooling1D
 from tensorflow.keras.layers import TextVectorization
 
+
+SEED = 42
+AUTOTUNE = tf.data.AUTOTUNE
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -28,7 +32,7 @@ df = pd.read_csv('./dataset/test.csv', encoding = 'latin1')
 # Drop null rows
 df.dropna(inplace=True)
 
-print(df.sample(20))
+# print(df.sample(20))
 
 # print(df.sample(20))
 df["tokenized_text"] = df["text"].astype(str).str.lower().apply(
@@ -36,3 +40,10 @@ df["tokenized_text"] = df["text"].astype(str).str.lower().apply(
 )
 
 print(df.head())
+
+
+
+# df.to_csv('dataset/train.csv', index=False)
+# df2 = pd.read_csv('./dataset/train.csv', encoding = 'latin1')
+
+# print(df2.head(5))
