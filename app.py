@@ -1,20 +1,38 @@
-# Install dependencies as needed:
-# pip install kagglehub[pandas-datasets]
-import kagglehub
-from kagglehub import KaggleDatasetAdapter
+import pandas as pd
+import numpy as np
+import spacy
 
-# Set the path to the file you'd like to load
-file_path = ""
+import io
+import os
+import re
+import shutil
+import string
+import tensorflow as tf
 
-# Load the latest version
-df = kagglehub.load_dataset(
-  KaggleDatasetAdapter.PANDAS,
-  "abhi8923shriv/sentiment-analysis-dataset",
-  file_path,
-  # Provide any additional arguments like 
-  # sql_query or pandas_kwargs. See the 
-  # documenation for more information:
-  # https://github.com/Kaggle/kagglehub/blob/main/README.md#kaggledatasetadapterpandas
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense, Embedding, GlobalAveragePooling1D
+from tensorflow.keras.layers import TextVectorization
+
+
+nlp = spacy.load("en_core_web_sm")
+
+import os
+for dirname, _, filenames in os.walk('./dataset'):
+    for filename in filenames:
+        print(os.path.join(dirname, filename))
+
+df = pd.read_csv('./dataset/test.csv', encoding = 'latin1')
+# print(df.head())
+# print("Before removing non null rows:", df.info())
+
+# Drop null rows
+df.dropna(inplace=True)
+
+print(df.sample(20))
+
+# print(df.sample(20))
+df["tokenized_text"] = df["text"].astype(str).str.lower().apply(
+    lambda x: [token.lemma_ for token in nlp(x) if not token.is_punct] # Use lemma_ for (running -> run) -> Returns base form of words, is_stop for stopwords and is_punct for punctuation(i.e. !!!!!!!!)
 )
 
-print("First 5 records:", df.head())
+print(df.head())
