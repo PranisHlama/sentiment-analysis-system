@@ -16,6 +16,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Embedding, LSTM, Dense, Dropout
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
+from sklearn.metrics import classification_report, confusion_matrix
 
 SEED = 42
 AUTOTUNE = tf.data.AUTOTUNE
@@ -129,6 +130,39 @@ history = model.fit(
     batch_size=32,
     validation_split=0.2
 )
+
+
+test_df = pd.read_csv("./dataset/test.csv", encoding="latin1")
+test_df.dropna(inplace=True)
+
+test_df["tokenized_text"] = test_df["text"].astype(str).str.lower().apply(
+    lambda x: [token.lemma_ for token in nlp(x) if not token.is_punct]
+)
+
+test_df["sequence"] = test_df["tokenized_text"].apply(
+    lambda sentence: [word_index[word] for word in sentence if word in word_index]
+)
+
+X_test = pad_sequences(
+    test_df["sequence"],
+    maxlen=MAX_LENGTH,
+    padding="post",
+    truncating="post"
+)
+
+y_test = test_df["sentiment"].map(sentiment_map).values
+
+test_loss, test_accuracy = model.evaluate(X_test, y_test)
+print("Test loss:", test_loss)
+print("Test accuracy:", test_accuracy)
+
+y_pred_probs = model.predict(X_test)
+y_pred = np.argmax(y_pred_probs, axis=1)
+
+labels = ["positive", "negative", "neutral"]
+
+print(classification_report(y_test, y_pred, target_names=labels))
+print(confusion_matrix(y_test, y_pred))
 
 print(df.head())
 print(df.info())
