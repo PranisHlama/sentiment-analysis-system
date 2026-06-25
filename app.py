@@ -17,6 +17,7 @@ from tensorflow.keras.layers import Embedding, LSTM, Dense, Dropout
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.model_selection import train_test_split
 
 SEED = 42
 AUTOTUNE = tf.data.AUTOTUNE
@@ -163,6 +164,22 @@ labels = ["positive", "negative", "neutral"]
 
 print(classification_report(y_test, y_pred, target_names=labels))
 print(confusion_matrix(y_test, y_pred))
+
+X_train, X_val, y_train, y_val = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=SEED,
+    stratify=y
+)
+
+history = model.fit(
+    X_train,
+    y_train,
+    epochs = 10,
+    batch_size = 32,
+    validation_data = (X_val, y_val)
+)
 
 print(df.head())
 print(df.info())
