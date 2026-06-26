@@ -34,8 +34,8 @@ def load_data(train_path="./dataset/train.csv", test_path="./dataset/test.csv"):
 
 
 def run_logistic_regression(
-    train_path="./dataset/train.csv",
-    test_path="./dataset/test.csv",
+    train_path="../dataset/train.csv",
+    test_path="../dataset/test.csv",
 ):
     X_train, X_test, y_train, y_test = load_data(train_path, test_path)
 
@@ -48,6 +48,17 @@ def run_logistic_regression(
     print("Accuracy:", accuracy)
     print(classification_report(y_test, y_pred))
     print(confusion_matrix(y_test, y_pred))
+
+    errors = pd.DataFrame({
+        "text": X_test.values,
+        "actual": y_test.values,
+        "predicted": y_pred,
+    })
+    
+    errors = errors[errors["actual"] != errors["predicted"]]
+
+    print(errors.head(20))
+    errors.to_csv("../dataset/error_analysis.csv", index=False)
 
     return {
         "model": model,
