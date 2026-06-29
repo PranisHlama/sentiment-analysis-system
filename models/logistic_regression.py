@@ -1,8 +1,9 @@
+import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 
-from config import ERROR_ANALYSIS_PATH, TEST_PATH, TRAIN_PATH
+from config import ERROR_ANALYSIS_PATH, TEST_PATH, TRAIN_PATH, LOGISTIC_REGRESSION_MODEL_PATH
 from src.data import load_sentiment_data, split_features_and_labels
 from src.evaluation import print_classification_results, save_error_analysis
 
@@ -29,8 +30,15 @@ def run_logistic_regression(
     X_train, y_train = split_features_and_labels(train_df)
     X_test, y_test = split_features_and_labels(test_df)
 
-    model = build_logistic_regression_model()
-    model.fit(X_train, y_train)
+    LOGISTIC_REGRESSION_MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    if LOGISTIC_REGRESSION_MODEL_PATH.exists():
+        model = joblib.load(LOGISTIC_REGRESSION_MODEL_PATH)
+    else:
+        model = build_logistic_regression_model()
+        model.fit(X_train, y_train)
+        joblib.dump(model, LOGISTIC_REGRESSION_MODEL_PATH)
+
 
     y_pred = model.predict(X_test)
     accuracy = print_classification_results(y_test, y_pred)

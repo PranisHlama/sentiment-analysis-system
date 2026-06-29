@@ -5,8 +5,20 @@ BASE_DIR = Path(__file__).resolve().parent
 DATASET_DIR = BASE_DIR / "dataset"
 TRAIN_PATH = DATASET_DIR / "train.csv"
 TEST_PATH = DATASET_DIR / "test.csv"
-ERROR_ANALYSIS_PATH = DATASET_DIR / "result/error_analysis.csv"
-MODEL_COMPARISON_PATH = DATASET_DIR / "result/model_comparison.csv"
+
+ERROR_ANALYSIS_PATH = DATASET_DIR / "error_analysis.csv"
+MODEL_COMPARISON_PATH = DATASET_DIR / "model_comparison.csv"
+
+ARTIFACTS_DIR = BASE_DIR / "artifacts"
+
+LOGISTIC_REGRESSION_MODEL_PATH = ARTIFACTS_DIR / "logistic_regression_model.joblib"
+
+LSTM_MODEL_PATH = ARTIFACTS_DIR / "lstm_model.keras"
+LSTM_WORD_INDEX_PATH = ARTIFACTS_DIR / "lstm_word_index.json"
+
+BERT_MODEL_DIR = BASE_DIR / "bert_sentiment_model"
+
+
 
 SEED = 42
 MAX_LENGTH = 100
