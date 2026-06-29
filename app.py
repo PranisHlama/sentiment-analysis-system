@@ -1,6 +1,6 @@
 import argparse
 
-MODEL_CHOICES = ("logistic-regression", "lstm")
+MODEL_CHOICES = ("logistic-regression", "lstm", "bert")
 
 
 def parse_args():
@@ -27,6 +27,11 @@ def get_model_runner(model_name):
         from models.lstm_classifier import run_lstm
 
         return run_lstm
+    
+    if model_name == "bert":
+        from models.bert_classifier import run_bert
+
+        return run_bert
 
     raise ValueError(f"Unsupported model: {model_name}")
 

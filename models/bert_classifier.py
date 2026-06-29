@@ -13,20 +13,11 @@ from transformers import (
 
 from transformers import pipeline
 
+from config import TRAIN_PATH, TEST_PATH
+from src.labels import LABEL_TO_ID, ID_TO_LABEL, SENTIMENT_LABELS
 
 MODEL_NAME = "bert-base-uncased"
 
-label2id = {
-    "positive": 0,
-    "negative": 1,
-    "neutral": 2,
-}
-
-id2label = {
-    0: "positive",
-    1: "negative",
-    2: "neutral",
-}
 
 
 def load_dataset(path):
@@ -34,13 +25,13 @@ def load_dataset(path):
     df = df.dropna(subset=["text", "sentiment"])
 
     df = df[["text", "sentiment"]].copy()
-    df["label"] = df["sentiment"].map(label2id)
+    df["label"] = df["sentiment"].map(LABEL_TO_ID)
 
     return Dataset.from_pandas(df[["text", "label"]])
 
 
-train_dataset = load_dataset("../dataset/train.csv")
-test_dataset = load_dataset("../dataset/test.csv")
+train_dataset = load_dataset("./dataset/train.csv")
+test_dataset = load_dataset("./dataset/test.csv")
 
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME) # Autotokenizer converts tweets into BERT Tokens
 
@@ -57,8 +48,8 @@ data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 model = AutoModelForSequenceClassification.from_pretrained( # Adds a classification head on top of BERT.
     MODEL_NAME,
     num_labels=3,
-    id2label=id2label,
-    label2id=label2id,
+    id2label=ID_TO_LABEL,
+    label2id=LABEL_TO_ID,
 )
 
 accuracy = evaluate.load("accuracy")
@@ -106,3 +97,35 @@ classifier = pipeline(
 )
 
 print(classifier("I love this product!"))
+
+def run_bert(train_path = TRAIN_PATH, test_path = TEST_PATH):
+    train_dataset = load_dataset(train_path)
+    test_dataset = load_dataset(test_path)
+
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+
+    train_dataset = train_dataset.map(
+        lambda batch: tokenizer(batch["text"], truncation=True, max_length=128),
+        batched=True,
+    )
+    test_dataset = test_dataset.map(
+        lambda batch: tokenizer(batch["text"], truncation=True, max_length=128),
+        batched=True,
+    )
+
+    model = AutoModelForSequenceClassification.from_pretrained(
+        MODEL_NAME,
+        num_labels=len(LABEL_TO_ID),
+        id2label=ID_TO_LABEL,
+        label2id=LABEL_TO_ID,
+    )
+
+    # build Trainer, train, evaluate...
+
+    metrics = trainer.evaluate()
+
+    return {
+        "model": model,
+        "accuracy": metrics.get("eval_accuracy"),
+        "metrics": metrics,
+    }
