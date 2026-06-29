@@ -59,3 +59,9 @@ Sarcasm or context is confusing the model.
 Additional preprocessing or a different model could improve performance.
 
 By reviewing the misclassified examples in the generated CSV, you can better understand your model's weaknesses and decide how to improve it. This is why error analysis is a standard step in evaluating machine learning models, especially in tasks like sentiment analysis.
+
+
+run 
+```
+python app.py run --model all
+```

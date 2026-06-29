@@ -1,6 +1,6 @@
 import argparse
 
-MODEL_CHOICES = ("logistic-regression", "lstm", "bert")
+MODEL_CHOICES = ("logistic-regression", "lstm", "bert", "all")
 
 
 def parse_args():
@@ -38,6 +38,23 @@ def get_model_runner(model_name):
 
 def main():
     args = parse_args()
+
+    if args.model == "all":
+        from config import MODEL_COMPARISON_PATH
+        from src.reporting import save_model_comparision
+        from models.logistic_regression import run_logistic_regression
+        from models.lstm_classifier import run_lstm
+        from models.bert_classifier import run_bert
+
+        results = {
+            "Logistic Regression": run_logistic_regression(),
+            "LSTM": run_lstm(),
+            "BERT": run_bert(),
+        }
+
+        save_model_comparision(results, MODEL_COMPARISON_PATH)
+        return
+    
     runner = get_model_runner(args.model)
     result = runner()
     print(f"Finished {args.model} with accuracy: {result['accuracy']}")
