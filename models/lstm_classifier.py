@@ -1,13 +1,18 @@
+import json
 import numpy as np
+
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Embedding, LSTM
+from tensorflow.keras.models import load_model
 
 from config import (
     BATCH_SIZE,
     EMBEDDING_DIM,
     EPOCHS,
     ERROR_ANALYSIS_PATH,
+    LSTM_MODEL_PATH,
+    LSTM_WORD_INDEX_PATH,
     HIDDEN_UNITS,
     LSTM_UNITS,
     MAX_LENGTH,
@@ -64,6 +69,10 @@ def prepare_lstm_features(train_df, test_df):
         seed=SEED,
     )
     word_index = build_word_index(train_tokens)
+    LSTM_WORD_INDEX_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(LSTM_WORD_INDEX_PATH, "w") as file:
+        json.dump(word_index, file)
+
     embedding_matrix = build_embedding_matrix(
         word_index,
         word2vec_model,
@@ -74,8 +83,19 @@ def prepare_lstm_features(train_df, test_df):
     X_test = texts_to_padded_sequences(test_tokens, word_index, MAX_LENGTH)
     y = train_df["sentiment"].map(LABEL_TO_ID).values
     y_test = test_df["sentiment"].map(LABEL_TO_ID).values
-
     return X, X_test, y, y_test, embedding_matrix
+
+
+def prepare_lstm_test_features(test_df):
+    with open(LSTM_WORD_INDEX_PATH) as file:
+        word_index = json.load(file)
+
+    nlp = load_spacy_model()
+    test_tokens = tokenize_texts(test_df["text"], nlp)
+    X_test = texts_to_padded_sequences(test_tokens, word_index, MAX_LENGTH)
+    y_test = test_df["sentiment"].map(LABEL_TO_ID).values
+
+    return X_test, y_test
 
 
 def run_lstm(
@@ -85,30 +105,39 @@ def run_lstm(
 ):
     train_df = load_sentiment_data(train_path)
     test_df = load_sentiment_data(test_path)
-    X, X_test, y, y_test, embedding_matrix = prepare_lstm_features(
-        train_df,
-        test_df,
-    )
 
-    X_train, X_val, y_train, y_val = train_test_split(
-        X,
-        y,
-        test_size=VALIDATION_SIZE,
-        random_state=SEED,
-        stratify=y,
-    )
+    if LSTM_MODEL_PATH.exists() and LSTM_WORD_INDEX_PATH.exists():
+        model = load_model(LSTM_MODEL_PATH)
+        X_test, y_test = prepare_lstm_test_features(test_df)
+        history = None
+    else:
+        X, X_test, y, y_test, embedding_matrix = prepare_lstm_features(
+            train_df,
+            test_df,
+        )
 
-    model = build_lstm_model(
-        vocab_size=embedding_matrix.shape[0],
-        embedding_matrix=embedding_matrix,
-    )
-    history = model.fit(
-        X_train,
-        y_train,
-        epochs=EPOCHS,
-        batch_size=BATCH_SIZE,
-        validation_data=(X_val, y_val),
-    )
+        X_train, X_val, y_train, y_val = train_test_split(
+            X,
+            y,
+            test_size=VALIDATION_SIZE,
+            random_state=SEED,
+            stratify=y,
+        )
+
+        model = build_lstm_model(
+            vocab_size=embedding_matrix.shape[0],
+            embedding_matrix=embedding_matrix,
+        )
+        history = model.fit(
+            X_train,
+            y_train,
+            epochs=EPOCHS,
+            batch_size=BATCH_SIZE,
+            validation_data=(X_val, y_val),
+        )
+
+        LSTM_MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
+        model.save(LSTM_MODEL_PATH)
 
     test_loss, test_accuracy = model.evaluate(X_test, y_test)
     print("Test loss:", test_loss)

@@ -41,7 +41,7 @@ def main():
 
     if args.model == "all":
         from config import MODEL_COMPARISON_PATH
-        from src.reporting import save_model_comparision
+        from src.reporting import save_model_comparison
         from models.logistic_regression import run_logistic_regression
         from models.lstm_classifier import run_lstm
         from models.bert_classifier import run_bert
@@ -52,7 +52,7 @@ def main():
             "BERT": run_bert(),
         }
 
-        save_model_comparision(results, MODEL_COMPARISON_PATH)
+        save_model_comparison(results, MODEL_COMPARISON_PATH)
         return
     
     runner = get_model_runner(args.model)
