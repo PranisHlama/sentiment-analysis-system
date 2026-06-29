@@ -8,12 +8,14 @@ def load_spacy_model(model_name="en_core_web_sm"):
     return spacy.load(model_name)
 
 
-def tokenize_texts(texts, nlp):
+def tokenize_texts(texts, nlp, remove_stopwords=True):
     return texts.astype(str).str.lower().apply(
         lambda text: [
             token.lemma_
             for token in nlp(text)
             if not token.is_punct
+            and not token.is_space
+            and (not remove_stopwords or not token.is_stop)
         ]
     )
 
