@@ -48,3 +48,14 @@ Model performance should be evaluated using:
 ## Error Analysis
 
 The final analysis should identify examples where the model makes incorrect predictions and discuss possible causes, such as ambiguous wording, sarcasm, class imbalance, noisy text, or insufficient training data.
+
+Overall accuracy doesn't tell you why the model makes mistakes. Error analysis helps you inspect those mistakes and identify patterns.
+
+For example, if your model frequently predicts Neutral for sentences that are actually Positive, you might discover that:
+
+The training data contains too few positive examples (class imbalance).
+Certain positive words or phrases were rare in training.
+Sarcasm or context is confusing the model.
+Additional preprocessing or a different model could improve performance.
+
+By reviewing the misclassified examples in the generated CSV, you can better understand your model's weaknesses and decide how to improve it. This is why error analysis is a standard step in evaluating machine learning models, especially in tasks like sentiment analysis.

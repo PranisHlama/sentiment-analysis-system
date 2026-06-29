@@ -18,7 +18,7 @@ def save_error_analysis(texts, actual, predicted, output_path):
         "actual": list(actual),
         "predicted": list(predicted),
     })
-    errors = errors[errors["actual"] != errors["predicted"]]
+    errors = errors[errors["actual"] != errors["predicted"]] # Filter out the model's mistakes
     errors.to_csv(output_path, index=False)
 
     return errors
