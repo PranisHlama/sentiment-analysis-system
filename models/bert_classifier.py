@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import evaluate
+from sklearn.metrics import accuracy_score
 
 from datasets import Dataset
 from transformers import (
@@ -11,9 +11,9 @@ from transformers import (
     Trainer,
 )
 
-from config import TRAIN_PATH, TEST_PATH, BERT_MODEL_DIR
+from config import TRAIN_PATH, TEST_PATH, BERT_MODEL_DIR, BERT_ERROR_ANALYSIS_PATH
 from src.labels import LABEL_TO_ID, ID_TO_LABEL
-
+from src.evaluation import save_error_analysis
 
 MODEL_NAME = "bert-base-uncased"
 
@@ -28,16 +28,14 @@ def load_dataset(path):
     return Dataset.from_pandas(df[["text", "label"]])
 
 
-accuracy = evaluate.load("accuracy")
-
 
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=1)
-    return accuracy.compute(predictions=predictions, references=labels)
+    return {"accuracy": accuracy_score(labels, predictions)}
 
 
-def run_bert(train_path=TRAIN_PATH, test_path=TEST_PATH):
+def run_bert(train_path=TRAIN_PATH, test_path=TEST_PATH, error_analysis_path=BERT_ERROR_ANALYSIS_PATH):
     train_dataset = load_dataset(train_path)
     test_dataset = load_dataset(test_path)
 
@@ -91,12 +89,26 @@ def run_bert(train_path=TRAIN_PATH, test_path=TEST_PATH):
         trainer.save_model(BERT_MODEL_DIR)
         tokenizer.save_pretrained(BERT_MODEL_DIR)
 
-    metrics = trainer.evaluate()
+    predictions = trainer.predict(test_dataset)
+    metrics = predictions.metrics
+    y_pred = np.argmax(predictions.predictions, axis=1)
+    y_test = np.array(test_dataset["label"])
+
+    errors = save_error_analysis(
+        test_dataset["text"],
+        [ID_TO_LABEL[label] for label in y_test],
+        [ID_TO_LABEL[label] for label in y_pred],
+        error_analysis_path,
+    )
+
+    print(errors.head(20))
 
     return {
         "model": model,
-        "accuracy": metrics.get("eval_accuracy"),
+        "accuracy": metrics.get("test_accuracy"),
         "metrics": metrics,
+        "y_test": y_test,
+        "y_pred": y_pred,
     }
 
 if __name__ == "__main__":
