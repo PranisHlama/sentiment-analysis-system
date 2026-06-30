@@ -10,7 +10,7 @@ from config import (
     BATCH_SIZE,
     EMBEDDING_DIM,
     EPOCHS,
-    ERROR_ANALYSIS_PATH,
+    LSTM_ERROR_ANALYSIS_PATH,
     LSTM_MODEL_PATH,
     LSTM_WORD_INDEX_PATH,
     HIDDEN_UNITS,
@@ -101,7 +101,7 @@ def prepare_lstm_test_features(test_df):
 def run_lstm(
     train_path=TRAIN_PATH,
     test_path=TEST_PATH,
-    error_analysis_path=ERROR_ANALYSIS_PATH,
+    error_analysis_path=LSTM_ERROR_ANALYSIS_PATH,
 ):
     train_df = load_sentiment_data(train_path)
     test_df = load_sentiment_data(test_path)
