@@ -26,6 +26,9 @@ logs/
 
 # Data and generated analysis outputs
 dataset/error_analysis.csv
+dataset/error_analysis_*.csv
+dataset/model_comparison.csv
+dataset/result_*.json
 dataset/*.tmp
 dataset/*.bak
 data/
