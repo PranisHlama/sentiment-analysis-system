@@ -39,22 +39,23 @@ def get_model_runner(model_name):
 def main():
     args = parse_args()
 
+    ### Run each model in a seperate process
+
     if args.model == "all":
-        from config import MODEL_COMPARISON_PATH
-        from src.reporting import save_model_comparison
-        from models.logistic_regression import run_logistic_regression
-        from models.lstm_classifier import run_lstm
-        from models.bert_classifier import run_bert
+        import subprocess
+        import sys
 
-        results = {
-            "Logistic Regression": run_logistic_regression(),
-            "LSTM": run_lstm(),
-            "BERT": run_bert(),
-        }
+        models = ["logistic-regression", "lstm", "bert"]
 
-        save_model_comparison(results, MODEL_COMPARISON_PATH)
+        for model in models:
+            print(f"\nRunning {model}...")
+            subprocess.run(
+                [sys.executable, "app.py", "--model", model],
+                check=True,
+            )
+
         return
-    
+
     runner = get_model_runner(args.model)
     result = runner()
     print(f"Finished {args.model} with accuracy: {result['accuracy']}")
