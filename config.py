@@ -6,7 +6,9 @@ DATASET_DIR = BASE_DIR / "dataset"
 TRAIN_PATH = DATASET_DIR / "train.csv"
 TEST_PATH = DATASET_DIR / "test.csv"
 
-ERROR_ANALYSIS_PATH = DATASET_DIR / "error_analysis.csv"
+LSTM_ERROR_ANALYSIS_PATH = DATASET_DIR / "error_analysis_lstm.csv"
+BERT_ERROR_ANALYSIS_PATH = DATASET_DIR / "error_analysis_bert.csv"
+LOGISTIC_REGRESSION_ERROR_ANALYSIS_PATH = DATASET_DIR / "error_analysis_logistic_regression.csv"
 MODEL_COMPARISON_PATH = DATASET_DIR / "model_comparison.csv"
 
 ARTIFACTS_DIR = BASE_DIR / "artifacts"

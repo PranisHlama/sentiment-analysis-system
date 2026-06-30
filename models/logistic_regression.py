@@ -3,7 +3,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 
-from config import ERROR_ANALYSIS_PATH, TEST_PATH, TRAIN_PATH, LOGISTIC_REGRESSION_MODEL_PATH
+from config import LOGISTIC_REGRESSION_ERROR_ANALYSIS_PATH, TEST_PATH, TRAIN_PATH, LOGISTIC_REGRESSION_MODEL_PATH
 from src.data import load_sentiment_data, split_features_and_labels
 from src.evaluation import print_classification_results, save_error_analysis
 
@@ -23,7 +23,7 @@ def build_logistic_regression_model():
 def run_logistic_regression(
     train_path=TRAIN_PATH,
     test_path=TEST_PATH,
-    error_analysis_path=ERROR_ANALYSIS_PATH,
+    error_analysis_path=LOGISTIC_REGRESSION_ERROR_ANALYSIS_PATH,
 ):
     train_df = load_sentiment_data(train_path)
     test_df = load_sentiment_data(test_path)
