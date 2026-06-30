@@ -1,3 +1,5 @@
+from config import MODEL_COMPARISON_PATH
+from src.reporting import save_model_comparison
 import argparse
 
 MODEL_CHOICES = ("logistic-regression", "lstm", "bert", "all")
@@ -39,25 +41,24 @@ def get_model_runner(model_name):
 def main():
     args = parse_args()
 
-    ### Run each model in a seperate process
+    ### Function calls for each model
 
     if args.model == "all":
-        import subprocess
-        import sys
+        results = {}
 
         models = ["logistic-regression", "lstm", "bert"]
 
         for model in models:
             print(f"\nRunning {model}...")
-            subprocess.run(
-                [sys.executable, "app.py", "--model", model],
-                check=True,
-            )
+            runner = get_model_runner(model)
+            results[model] = runner()
 
+        save_model_comparison(results, MODEL_COMPARISON_PATH)
         return
 
     runner = get_model_runner(args.model)
     result = runner()
+    save_model_comparison({args.model: result}, MODEL_COMPARISON_PATH)
     print(f"Finished {args.model} with accuracy: {result['accuracy']}")
 
 
